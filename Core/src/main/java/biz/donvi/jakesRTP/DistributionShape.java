@@ -5,9 +5,9 @@ import org.bukkit.configuration.ConfigurationSection;
 import java.util.ArrayList;
 import java.util.List;
 
-import static biz.donvi.evenDistribution.RandomCords.*;
 import static biz.donvi.jakesRTP.MessageStyles.DebugDisplayLines.*;
 import static biz.donvi.jakesRTP.MessageStyles.enabledOrDisabled;
+import static biz.donvi.jakesRTP.evenDistribution.RandomCords.*;
 
 abstract class DistributionShape {
 

@@ -1,6 +1,8 @@
 package biz.donvi.jakesRTP.claimsIntegrations;
 
-import me.william278.husktowns.HuskTownsAPI;
+import net.william278.husktowns.api.HuskTownsAPI;
+import net.william278.husktowns.claim.Chunk;
+import net.william278.husktowns.claim.World;
 import org.bukkit.Location;
 import org.bukkit.plugin.Plugin;
 
@@ -19,6 +21,6 @@ public class LrHuskTowns implements LocationRestrictor {
 
     @Override
     public boolean denyLandingAtLocation(Location location) {
-        return (!HuskTownsAPI.getInstance().isWilderness(location));
+        return (!HuskTownsAPI.getInstance().isClaimAt(Chunk.at((int) location.getX(), (int) location.getZ()), World.of(location.getWorld().getUID(), location.getWorld().getName(), String.valueOf(location.getWorld().getEnvironment()))));
     }
 }

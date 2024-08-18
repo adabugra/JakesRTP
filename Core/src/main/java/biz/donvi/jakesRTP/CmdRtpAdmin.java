@@ -1,9 +1,9 @@
 package biz.donvi.jakesRTP;
 
-import biz.donvi.argsChecker.ArgsChecker;
-import biz.donvi.argsChecker.ArgsTester;
-import biz.donvi.argsChecker.DynamicArgsMap;
 import biz.donvi.jakesRTP.GeneralUtil.Pair;
+import biz.donvi.jakesRTP.argsChecker.ArgsChecker;
+import biz.donvi.jakesRTP.argsChecker.ArgsTester;
+import biz.donvi.jakesRTP.argsChecker.DynamicArgsMap;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
