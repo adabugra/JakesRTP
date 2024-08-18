@@ -88,24 +88,28 @@ public class SafeLocationFinderOtherThread extends SafeLocationFinder {
             // the timeout to be reached, or let the server forcefully kill it (and send us an annoying message in
             // console). To get around this, we break up the two gets into their own sections, and check every few
             // milliseconds if we can retrieve it, or if we should give up.
-            CompletableFuture<ChunkSnapshot> getChunkSnapshotFuture = null;
-            Future<CompletableFuture<ChunkSnapshot>> callSyncFuture =
-                Bukkit.getScheduler().callSyncMethod(
-                    JakesRtpPlugin.plugin,
-                    () -> PaperLib.getChunkAtAsync(chunkAt).thenApply(Chunk::getChunkSnapshot)
-                );
+            CompletableFuture<ChunkSnapshot> chunkSnapshotFuture = new CompletableFuture<>();
+            JakesRtpPlugin.morePaperLib.scheduling().regionSpecificScheduler(chunkAt).run(() ->
+                    PaperLib.getChunkAtAsync(chunkAt).thenApply(Chunk::getChunkSnapshot)
+                    .thenAccept(chunkSnapshotFuture::complete)
+                    .exceptionally(ex -> {
+                        chunkSnapshotFuture.completeExceptionally(ex);
+                        return null;
+                    }));
+
             // Looks to get the result of `callSyncFuture` which will be the value of `getChunkSnapshotFuture`
-            while (System.currentTimeMillis() < maxTime && plugin.locCache())
-                if (callSyncFuture.isDone()) {
-                    getChunkSnapshotFuture = callSyncFuture.get();
+            while (System.currentTimeMillis() < maxTime && plugin.locCache()) {
+                if (chunkSnapshotFuture.isDone()) {
+                    chunkSnapshot = chunkSnapshotFuture.get();
                     break;
                 } else synchronized (this) {
                     wait(100);
                 }
+            }
             // Looks to get the result of `getChunkSnapshotFuture` which is the value of `chunkSnapshot`
             while (System.currentTimeMillis() < maxTime && plugin.locCache())
-                if (getChunkSnapshotFuture.isDone()) {
-                    chunkSnapshot = getChunkSnapshotFuture.get();
+                if (chunkSnapshotFuture.isDone()) {
+                    chunkSnapshot = chunkSnapshotFuture.get();
                     break;
                 } else synchronized (this) {
                     wait(100);

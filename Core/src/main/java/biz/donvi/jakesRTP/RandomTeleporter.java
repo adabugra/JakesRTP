@@ -7,7 +7,9 @@ import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import space.arim.morepaperlib.scheduling.ScheduledTask;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -22,7 +24,7 @@ public class RandomTeleporter {
     // The warmup thing...
     // A player can only be waiting for one rtp, regardless of how many they call.
     // The int stored is the id of the task to cancel it.
-    final Map<UUID, Integer> playersInWarmup = new HashMap<>();
+    final Map<UUID, ScheduledTask> playersInWarmup = new HashMap<>();
 
     // Dynamic settings
     public final  Map<String, DistributionSettings> distributionSettings;
@@ -364,8 +366,8 @@ public class RandomTeleporter {
         if (queueEnabled && takeFromQueue && rtpProfile.canUseLocQueue) {
             Location preselectedLocation = rtpProfile.locationQueue.poll();
             if (preselectedLocation != null) {
-                plugin.getServer().getScheduler() // Tell queue to refill soon
-                      .runTaskLaterAsynchronously(plugin, () -> locFinderRunnable.syncNotify(), 100);
+                morePaperLib.scheduling().asyncScheduler() // Tell queue to refill soon
+                        .runDelayed(() -> locFinderRunnable.syncNotify(), Duration.ofMillis(100L * 50L));
                 return preselectedLocation;
             }
         }

@@ -77,7 +77,8 @@ public class RandomTeleportAction {
     public RandomTeleportAction teleportSync(Player player) throws JrtpBaseException {
         SafeLocationUtils.requireMainThread();
         preTeleport(player);
-        player.teleport(landingLoc);
+        PaperLib.teleportAsync(player, landingLoc);
+//        player.teleport(landingLoc);
         postTeleport(true);
         return this;
     }
@@ -91,10 +92,11 @@ public class RandomTeleportAction {
      */
     public RandomTeleportAction teleportSyncNonPrimaryThread(Player player) throws JrtpBaseException {
         preTeleport(player);
-        player.getServer().getScheduler().runTask(JakesRtpPlugin.plugin, () -> {
-            player.teleport(landingLoc);
+        JakesRtpPlugin.morePaperLib.scheduling().entitySpecificScheduler(player).run(() -> {
+            PaperLib.teleportAsync(player, landingLoc);
+//            player.teleport(landingLoc);
             postTeleport(true);
-        });
+        }, null);
         return this;
     }
 

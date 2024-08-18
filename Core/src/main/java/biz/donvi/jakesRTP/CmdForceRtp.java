@@ -1,8 +1,8 @@
 package biz.donvi.jakesRTP;
 
-import biz.donvi.argsChecker.ArgsChecker;
-import biz.donvi.argsChecker.ArgsTester;
-import biz.donvi.argsChecker.DynamicArgsMap;
+import biz.donvi.jakesRTP.argsChecker.ArgsChecker;
+import biz.donvi.jakesRTP.argsChecker.ArgsTester;
+import biz.donvi.jakesRTP.argsChecker.DynamicArgsMap;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -95,7 +95,7 @@ public class CmdForceRtp extends DynamicArgsMap implements TabExecutor {
     }
 
     @Override
-    public void getPotential(String[] path) throws ResultAlreadySetException {
+    public void getPotential(String[] path) throws DynamicArgsMap.ResultAlreadySetException {
         if (path.length == 0) {
             List<String> players = new ArrayList<>();
             for (Player player : getServer().getOnlinePlayers())
@@ -117,7 +117,7 @@ public class CmdForceRtp extends DynamicArgsMap implements TabExecutor {
     }
 
     @Override
-    public void getPotential(String path) throws ResultAlreadySetException { }
+    public void getPotential(String path) throws DynamicArgsMap.ResultAlreadySetException { }
 
 
 }

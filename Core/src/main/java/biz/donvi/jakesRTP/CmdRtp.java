@@ -6,7 +6,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitScheduler;
+import space.arim.morepaperlib.scheduling.ScheduledTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,11 +46,11 @@ public class CmdRtp implements TabExecutor {
                             // ==== By this point, all checks are done and the player WILL be teleported. ====
                             final Runnable execRtp = makeRunnable(player, relSettings, warmup);
                             if (warmup) { // If there is a warmup, schedule the runnable
-                                final int taskID = sender
-                                    .getServer().getScheduler() // Get the task ID so that we can cancel it later.
-                                    .scheduleSyncRepeatingTask(plugin, execRtp, 2, 20);
-                                if (taskID == -1) // This should only really happen during shutdown.
-                                    throw new JrtpBaseException("Could not schedule rtp-after-warmup.");
+                                final ScheduledTask taskID = JakesRtpPlugin.morePaperLib.scheduling()
+                                        .entitySpecificScheduler(player)
+                                        .runAtFixedRate(execRtp, null, 2L, 20L);
+//                                if (taskID == -1) // This should only really happen during shutdown.
+//                                    throw new JrtpBaseException("Could not schedule rtp-after-warmup.");
                                 randomTeleporter.playersInWarmup.put(player.getUniqueId(),
                                                                      taskID); // Needed for canceling.
                             } else execRtp.run(); // No warmup, just run the teleport.
@@ -62,16 +62,12 @@ public class CmdRtp implements TabExecutor {
             }
         } catch (JrtpBaseException.NotPermittedException npe) {
             sender.sendMessage(Messages.NP_GENERIC.format(npe.getMessage()));
-        } catch (JrtpBaseException e) {
-            sender.sendMessage(e.getMessage());
-            e.printStackTrace();
         }
         return true;
     }
 
     private Runnable makeRunnable(final Player player, final RtpProfile rtpProfile, boolean calculatedWarmup) {
         return new Runnable() {
-            private final BukkitScheduler scheduler = player.getServer().getScheduler();
             private final Location startLoc = player.getLocation().clone();
             private final boolean warmup = calculatedWarmup;
             private final long startTime = System.currentTimeMillis();
@@ -147,13 +143,13 @@ public class CmdRtp implements TabExecutor {
 
             private void cancelTask() {
                 done++;
-                Integer taskID = randomTeleporter.playersInWarmup.remove(player.getUniqueId());
-                if (taskID != null)
-                    scheduler.cancelTask(taskID); // Only cancel if task existed.
+                ScheduledTask taskID = randomTeleporter.playersInWarmup.remove(player.getUniqueId());
+                if (taskID != null && !taskID.isCancelled())
+                    taskID.cancel(); // Only cancel if task existed.
             }
 
             private void taskError() {
-                if (done > 1000) scheduler.cancelTasks(plugin); // Emergency cleanup.
+                if (done > 1000) JakesRtpPlugin.morePaperLib.scheduling().cancelGlobalTasks(); // Emergency cleanup.
                 if (done < 10 || done % 100 == 0) throw new RuntimeException("RTP task run twice?? Please report.");
                 done++; // This is meant to be annoying, but not *too* annoying.
             }

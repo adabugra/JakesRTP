@@ -1,13 +1,13 @@
 package biz.donvi.jakesRTP;
 
-import biz.donvi.argsChecker.Util;
+import biz.donvi.jakesRTP.argsChecker.Util;
 import biz.donvi.jakesRTP.claimsIntegrations.ClaimsManager;
 import net.milkbowl.vault.economy.Economy;
-import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.yaml.snakeyaml.Yaml;
+import space.arim.morepaperlib.MorePaperLib;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -28,6 +28,7 @@ public final class JakesRtpPlugin extends JavaPlugin {
 
     //<editor-fold desc="======== Static Fields ========">
     static JakesRtpPlugin        plugin;
+    static MorePaperLib          morePaperLib;
     static Map<String, Object>   cmdMap;
     static LocationCacheFiller   locFinderRunnable;
     static WorldBorderPluginHook worldBorderPluginHook;
@@ -63,6 +64,7 @@ public final class JakesRtpPlugin extends JavaPlugin {
 
         //Set up the reference for some objects
         plugin = this;
+        morePaperLib = new MorePaperLib(this);
         logger = plugin.getLogger();
         cmdMap = new Yaml().load(this.getClassLoader().getResourceAsStream("commandTree.yml"));
         worldBorderPluginHook = new WorldBorderPluginHook(getServer());
@@ -87,7 +89,7 @@ public final class JakesRtpPlugin extends JavaPlugin {
         HandlerList.unregisterAll(this);
         theRandomTeleporter = null;
         locFinderRunnable.markAsOver();
-        Bukkit.getScheduler().cancelTasks(this);
+        morePaperLib.scheduling().cancelGlobalTasks();
     }
 
     public boolean locCache() {
@@ -176,12 +178,10 @@ public final class JakesRtpPlugin extends JavaPlugin {
         //Then load up a new runnable
         if (getConfig().getBoolean("location-cache-filler.enabled", true)) {
             infoLog("Setting up the location caching system.");
-            Bukkit.getScheduler().runTaskAsynchronously(this, (
-                locFinderRunnable = new LocationCacheFiller(
+            morePaperLib.scheduling().asyncScheduler().run(() -> locFinderRunnable = new LocationCacheFiller(
                     this,
                     (long) (getConfig().getDouble("location-cache-filler.recheck-time", 2) * 1000),
-                    (long) (getConfig().getDouble("location-cache-filler.between-time", 0.5) * 1000))
-            ));
+                    (long) (getConfig().getDouble("location-cache-filler.between-time", 0.5) * 1000)));
         }
     }
 
