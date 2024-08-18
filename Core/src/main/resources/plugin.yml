@@ -4,6 +4,7 @@ main: biz.donvi.jakesRTP.JakesRtpPlugin
 prefix: 'J-RTP'
 version: '${version}'
 api-version: '1.13'
+folia-supported: true
 
 softdepend:
   # Needed for multi-world support
