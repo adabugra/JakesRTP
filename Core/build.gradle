@@ -41,7 +41,7 @@ processResources {
 }
 
 shadowJar {
-    relocate 'io.papermc', 'biz.donvi.jakesRTP.libs.io.papermc'
+    relocate 'io.papermc.lib', 'biz.donvi.jakesRTP.libs.io.papermc.lib'
     relocate 'space.arim.morepaperlib', 'biz.donvi.jakesRTP.libs.io.morepaperlib'
     relocate 'biz.donvi.argsChecker', 'biz.donvi.jakesRTP.libs.biz.donvi.argsChecker'
     relocate 'biz.donvi.evenDistribution', 'biz.donvi.jakesRTP.libs.biz.donvi.evenDistribution'
@@ -51,7 +51,7 @@ artifacts {
     archives shadowJar
 }
 
-task copyToMainOut(type: Copy) {
+tasks.register('copyToMainOut', Copy) {
     dependsOn(tasks.build)
 
     def outputDir = file("../build-output-final/")
@@ -64,12 +64,12 @@ task copyToMainOut(type: Copy) {
     from file("build/libs/Core-${project.version}-all.jar")
     into outputDir
 
-    rename {fileName ->
+    rename { fileName ->
         fileName.replace("Core-", "JakesRTP-v").replace("-all", "")
     }
 }
 
-task prepareTestServer(type: Copy) {
+tasks.register('prepareTestServer', Copy) {
     dependsOn(tasks.copyToMainOut)
     delete file("../testServer/plugins/JakesRTP.jar")
     from file("../build-output-final/JakesRTP-v${project.version}.jar")

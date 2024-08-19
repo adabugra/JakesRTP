@@ -3,6 +3,9 @@ package biz.donvi.jakesRTP;
 import org.bukkit.Location;
 import org.bukkit.Material;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
 import static biz.donvi.jakesRTP.SafeLocationUtils.requireMainThread;
 
 public class SafeLocationFinderBukkitThread extends SafeLocationFinder {
@@ -17,7 +20,23 @@ public class SafeLocationFinderBukkitThread extends SafeLocationFinder {
     @Override
     protected Material getLocMaterial(Location loc) {
         requireMainThread();
-        return loc.getBlock().getType();
+        CompletableFuture<Material> materialFuture = new CompletableFuture<>();
+
+        JakesRtpPlugin.morePaperLib.scheduling().regionSpecificScheduler(loc).run(() -> {
+            try {
+                Material material = loc.getBlock().getType();
+                materialFuture.complete(material);
+            } catch (Exception e) {
+                materialFuture.completeExceptionally(e);
+            }
+
+        });
+
+        try {
+            return materialFuture.get(); // Waits for the task to complete and returns the result
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Failed to get material from location", e);
+        }
     }
 
     @Override
